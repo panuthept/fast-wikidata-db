@@ -7,3 +7,5 @@ python preprocess_dump.py \
     --out_dir ./data
     --batch_size 10000
     --language_id en
+
+# Indexing the preprocessed dump
