@@ -32,11 +32,13 @@ def main():
     parser.add_argument("--num_files", type=int, default=10000)
     args = parser.parse_args()
 
+    input_dir = join(args.input_dir, "value_rels")
+
     output_dir = join(args.output_dir, "value_rels")
     if not exists(output_dir):
         os.makedirs(output_dir)
 
-    input_files = [join(args.input_dir, f) for f in os.listdir(args.input_dir) if f.endswith(".jsonl")]
+    input_files = [join(input_dir, f) for f in os.listdir(input_dir) if f.endswith(".jsonl")]
     for input_file in tqdm(input_files):
         with open(input_file) as f:
             for line in f:
