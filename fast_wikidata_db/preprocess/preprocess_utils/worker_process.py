@@ -101,6 +101,12 @@ def process_json(obj, language_id="en"):
                     'property_id': property_id,
                     'value': value
                 })
+                out_data['entity_inv_rels'].append({
+                    'claim_id': claim_id,
+                    'qid': value,
+                    'property_id': property_id,
+                    'value': id
+                })
             elif datatype == 'external-id':
                 out_data['external_ids'].append({
                     'claim_id': claim_id,

@@ -6,7 +6,7 @@ import time
 import ujson
 
 TABLE_NAMES = [
-    'labels', 'descriptions', 'aliases', 'external_ids', 'entity_values', 'qualifiers', 'wikipedia_links', 'entity_rels'
+    'labels', 'descriptions', 'aliases', 'external_ids', 'entity_values', 'qualifiers', 'wikipedia_links', 'entity_rels', 'entity_inv_rels'
 ]
 
 
