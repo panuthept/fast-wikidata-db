@@ -6,7 +6,7 @@ Example command:
 
 python3 preprocess_dump.py \
     --input_file /lfs/raiders8/0/lorr1/wikidata/raw_data/latest-all.json.gz \
-    --out_dir data/processed
+    --output_dir data/processed
 
 """
 import argparse
@@ -15,6 +15,7 @@ from multiprocessing import Queue, Process
 from pathlib import Path
 import time
 
+from fast_wikidata_db.constants.const import DEFAULT_DATA_DIR
 from fast_wikidata_db.preprocess.preprocess_utils.reader_process import count_lines, read_data
 from fast_wikidata_db.preprocess.preprocess_utils.worker_process import process_data
 from fast_wikidata_db.preprocess.preprocess_utils.writer_process import write_data
@@ -23,7 +24,7 @@ from fast_wikidata_db.preprocess.preprocess_utils.writer_process import write_da
 def get_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_file', type=str, required=True, help='path to gz wikidata json dump')
-    parser.add_argument('--out_dir', type=str, required=True, help='path to output directory')
+    parser.add_argument('--output_dir', type=str, default=DEFAULT_DATA_DIR, help='path to output directory')
     parser.add_argument('--language_id', type=str, default='en', help='language identifier')
     parser.add_argument('--processes', type=int, default=90, help="number of concurrent processes to spin off. ")
     parser.add_argument('--batch_size', type=int, default=10000)
@@ -38,8 +39,8 @@ def main():
     args = get_arg_parser().parse_args()
     print(f"ARGS: {args}")
 
-    out_dir = Path(args.out_dir)
-    out_dir.mkdir(exist_ok=True, parents=True)
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(exist_ok=True, parents=True)
 
     input_file = Path(args.input_file)
     assert input_file.exists(), f"Input file {input_file} does not exist"
@@ -70,7 +71,7 @@ def main():
 
     write_process = Process(
         target=write_data,
-        args=(out_dir, args.batch_size, total_num_lines, output_queue)
+        args=(output_dir, args.batch_size, total_num_lines, output_queue)
     )
     write_process.start()
 
