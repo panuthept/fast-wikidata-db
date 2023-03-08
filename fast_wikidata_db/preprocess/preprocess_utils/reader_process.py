@@ -6,7 +6,7 @@ import gzip
 def count_lines(input_file: Path, max_lines_to_read: int):
     cnt = 0
     with gzip.open(input_file, 'rb') as f:
-        for _ in tqdm(f):
+        for _ in tqdm(f, desc="Counting lines"):
             cnt += 1
             if max_lines_to_read > 0 and cnt >= max_lines_to_read:
                 break
@@ -22,7 +22,7 @@ def read_data(input_file: Path, num_lines_read: Value, max_lines_to_read: int, w
     """
     with gzip.GzipFile(input_file, "r") as f:
         num_lines = 0
-        for ln in f:
+        for ln in tqdm(f, total=max_lines_to_read, position=0, desc="Reading wikidata dump"):
             if ln == b"[\n" or ln == b"]\n":
                 continue
             if ln.endswith(b",\n"):  # all but the last element

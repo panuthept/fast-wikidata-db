@@ -23,11 +23,11 @@ from fast_wikidata_db.preprocess.preprocess_utils.writer_process import write_da
 
 def get_arg_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_file', type=str, required=True, help='path to gz wikidata json dump')
+    parser.add_argument('--wikidata_dump_dir', type=str, required=True, help='path to gz wikidata json dump')
     parser.add_argument('--output_dir', type=str, default=DEFAULT_DATA_DIR, help='path to output directory')
     parser.add_argument('--language_id', type=str, default='en', help='language identifier')
     parser.add_argument('--processes', type=int, default=90, help="number of concurrent processes to spin off. ")
-    parser.add_argument('--batch_size', type=int, default=10000)
+    parser.add_argument('--batch_nums', type=int, default=10000)
     parser.add_argument('--num_lines_read', type=int, default=-1,
                         help='Terminate after num_lines_read lines are read. Useful for debugging.')
     parser.add_argument('--num_lines_in_dump', type=int, default=-1, help='Number of lines in dump. If -1, we will count the number of lines.')
@@ -42,16 +42,17 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    input_file = Path(args.input_file)
+    input_file = Path(args.wikidata_dump_dir)
     assert input_file.exists(), f"Input file {input_file} does not exist"
 
 
     max_lines_to_read = args.num_lines_read
     if args.num_lines_in_dump <= 0:
-        print("Counting lines")
         total_num_lines = count_lines(input_file, max_lines_to_read)
     else:
         total_num_lines = args.num_lines_in_dump
+    max_lines_to_read = total_num_lines
+    print(f"Total number of lines: {total_num_lines}")
 
     print("Starting processes")
     maxsize = 10 * args.processes
@@ -71,7 +72,7 @@ def main():
 
     write_process = Process(
         target=write_data,
-        args=(output_dir, args.batch_size, total_num_lines, output_queue)
+        args=(output_dir, args.batch_nums, total_num_lines, output_queue)
     )
     write_process.start()
 
