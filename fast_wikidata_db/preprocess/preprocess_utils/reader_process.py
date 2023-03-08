@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from multiprocessing import Queue, Value
 from pathlib import Path
 import gzip
@@ -5,7 +6,7 @@ import gzip
 def count_lines(input_file: Path, max_lines_to_read: int):
     cnt = 0
     with gzip.open(input_file, 'rb') as f:
-        for _ in f:
+        for _ in tqdm(f):
             cnt += 1
             if max_lines_to_read > 0 and cnt >= max_lines_to_read:
                 break
