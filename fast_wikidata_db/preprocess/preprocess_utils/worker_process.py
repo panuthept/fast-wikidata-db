@@ -82,12 +82,11 @@ def process_json(obj, language_id="en"):
             'wiki_title': sitelink
         })
 
-    # extract claims and qualifiers
+    # extract entity_rels and entity_values
     for property_id in obj['claims']:
         for claim in obj['claims'][property_id]:
             if not claim['mainsnak']['snaktype'] == 'value':
                 continue
-            claim_id = claim['id']
             datatype = claim['mainsnak']['datatype']
             value = process_mainsnak(claim['mainsnak'], language_id)
 
@@ -96,27 +95,17 @@ def process_json(obj, language_id="en"):
 
             if datatype == 'wikibase-item':
                 out_data['entity_rels'].append({
-                    'claim_id': claim_id,
                     'qid': id,
                     'property_id': property_id,
                     'value': value
                 })
                 out_data['entity_inv_rels'].append({
-                    'claim_id': claim_id,
                     'qid': value,
                     'property_id': property_id,
                     'value': id
                 })
-            elif datatype == 'external-id':
-                out_data['external_ids'].append({
-                    'claim_id': claim_id,
-                    'qid': id,
-                    'property_id': property_id,
-                    'value': value
-                })
             else:
                 out_data['entity_values'].append({
-                    'claim_id': claim_id,
                     'qid': id,
                     'property_id': property_id,
                     'value': value
@@ -126,23 +115,6 @@ def process_json(obj, language_id="en"):
                         'qid': id,
                         'alias': value,
                     })
-
-            # get qualifiers
-            if 'qualifiers' in claim:
-                for qualifier_property in claim['qualifiers']:
-                    for qualifier in claim['qualifiers'][qualifier_property]:
-                        if not qualifier['snaktype'] == 'value':
-                            continue
-                        qualifier_id = qualifier['hash']
-                        value = process_mainsnak(qualifier, language_id)
-                        if value is None:
-                            continue
-                        out_data['qualifiers'].append({
-                            'qualifier_id': qualifier_id,
-                            'claim_id': claim_id,
-                            'property_id': qualifier_property,
-                            'value': value
-                        })
 
     return dict(out_data)
 
