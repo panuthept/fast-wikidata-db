@@ -3,7 +3,7 @@ wget -P ./data https://dumps.wikimedia.org/wikidatawiki/entities/latest-all.json
 
 # Preprocess the dump
 python -m fast_wikidata_db.preprocess.preprocess_dump \
-    --wikidata_dump_dir ./data/latest-all.json.gz \
+    --input_dir ./data/latest-all.json.gz \
     --output_dir ./data/en \
     --batch_nums 10000 \
     --language_id en

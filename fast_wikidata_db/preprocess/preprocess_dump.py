@@ -1,14 +1,8 @@
-""" Wikidata Dump Processor
-
+""" 
+Wikidata Dump Processor
 This script preprocesses the raw Wikidata dump (in JSON format) and sorts triples into 8 "tables": labels, descriptions, aliases, entity_rels, external_ids, entity_values, qualifiers, and wikipedia_links. See the README for more information on each table.
-
-Example command:
-
-python3 preprocess_dump.py \
-    --input_file /lfs/raiders8/0/lorr1/wikidata/raw_data/latest-all.json.gz \
-    --output_dir data/processed
-
 """
+
 import argparse
 import multiprocessing
 from multiprocessing import Queue, Process
@@ -23,7 +17,7 @@ from fast_wikidata_db.preprocess.preprocess_utils.writer_process import write_da
 
 def get_arg_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--wikidata_dump_dir', type=str, required=True, help='path to gz wikidata json dump')
+    parser.add_argument('--input_dir', type=str, required=True, help='path to gz wikidata json dump')
     parser.add_argument('--output_dir', type=str, default=DEFAULT_DATA_DIR, help='path to output directory')
     parser.add_argument('--language_id', type=str, default='en', help='language identifier')
     parser.add_argument('--processes', type=int, default=90, help="number of concurrent processes to spin off. ")
@@ -42,13 +36,13 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    input_file = Path(args.wikidata_dump_dir)
-    assert input_file.exists(), f"Input file {input_file} does not exist"
+    input_dir = Path(args.input_dir)
+    assert input_dir.exists(), f"Input file {input_dir} does not exist"
 
 
     max_lines_to_read = args.num_lines_read
     if args.num_lines_in_dump <= 0:
-        total_num_lines = count_lines(input_file, max_lines_to_read)
+        total_num_lines = count_lines(input_dir, max_lines_to_read)
     else:
         total_num_lines = args.num_lines_in_dump
     max_lines_to_read = total_num_lines
@@ -65,7 +59,7 @@ def main():
     num_lines_read = multiprocessing.Value("i", 0)
     read_process = Process(
         target=read_data,
-        args=(input_file, num_lines_read, max_lines_to_read, work_queue)
+        args=(input_dir, num_lines_read, max_lines_to_read, work_queue)
     )
 
     read_process.start()
