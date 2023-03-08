@@ -1,8 +1,8 @@
 import shutil
+from tqdm import tqdm
 from multiprocessing import Queue
 from pathlib import Path
 from typing import Dict, Any, List
-import time
 import ujson
 
 TABLE_NAMES = [
@@ -22,32 +22,21 @@ class Table:
 
     def write(self, json_value: List[Dict[str, Any]]):
         for json_obj in json_value:
-            if self.table_name == 'qualifiers':
-                file_index = hash(json_obj['claim_id']) % self.batch_nums
-            else:
-                file_index = int(json_obj['qid'][1:]) % self.batch_nums
+            file_index = int(json_obj['qid'][1:]) % self.batch_nums
             with open(self.table_dir / f"{file_index:d}.jsonl", 'a') as f:
                 f.write(ujson.dumps(json_obj, ensure_ascii=False) + '\n')
 
 
 class Writer:
     def __init__(self, path: Path, batch_nums: int, total_num_lines: int):
-        self.cur_num_lines = 0
-        self.total_num_lines = total_num_lines
-        self.start_time = time.time()
         self.output_tables = {table_name: Table(path, batch_nums, table_name) for table_name in TABLE_NAMES}
+        self.progress_bars = {table_name: tqdm(total=total_num_lines, position=i + 1, desc=f"Writing {table_name}") for i, table_name in enumerate(TABLE_NAMES)}
 
     def write(self, json_object: Dict[str, Any]):
-        self.cur_num_lines += 1
         for key, value in json_object.items():
             if len(value) > 0:
                 self.output_tables[key].write(value)
-        if self.cur_num_lines % 200000 == 0:
-            time_elapsed = time.time() - self.start_time
-            estimated_time = time_elapsed * (self.total_num_lines - self.cur_num_lines) / (200000*3600)
-            print(f"{self.cur_num_lines}/{self.total_num_lines} lines written in {time_elapsed:.2f}s. "
-                  f"Estimated time to completion is {estimated_time:.2f} hours.")
-            self.start_time = time.time()
+                self.progress_bars[key].update(1)
 
 
 def write_data(path: Path, batch_nums: int, total_num_lines: int, outout_queue: Queue):

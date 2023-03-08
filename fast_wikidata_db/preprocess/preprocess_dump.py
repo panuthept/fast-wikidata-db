@@ -23,7 +23,7 @@ from fast_wikidata_db.preprocess.preprocess_utils.writer_process import write_da
 
 def get_arg_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_file', type=str, required=True, help='path to gz wikidata json dump')
+    parser.add_argument('--wikidata_dump_dir', type=str, required=True, help='path to gz wikidata json dump')
     parser.add_argument('--output_dir', type=str, default=DEFAULT_DATA_DIR, help='path to output directory')
     parser.add_argument('--language_id', type=str, default='en', help='language identifier')
     parser.add_argument('--processes', type=int, default=90, help="number of concurrent processes to spin off. ")
@@ -42,16 +42,17 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    input_file = Path(args.input_file)
+    input_file = Path(args.wikidata_dump_dir)
     assert input_file.exists(), f"Input file {input_file} does not exist"
 
 
     max_lines_to_read = args.num_lines_read
     if args.num_lines_in_dump <= 0:
-        print("Counting lines")
         total_num_lines = count_lines(input_file, max_lines_to_read)
     else:
         total_num_lines = args.num_lines_in_dump
+    max_lines_to_read = total_num_lines
+    print(f"Total number of lines: {total_num_lines}")
 
     print("Starting processes")
     maxsize = 10 * args.processes
