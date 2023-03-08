@@ -11,41 +11,31 @@ TABLE_NAMES = [
 
 
 class Table:
-    def __init__(self, path: Path, batch_size: int, table_name: str):
+    def __init__(self, path: Path, batch_nums: int, table_name: str):
+        self.table_name = table_name
         self.table_dir = path / table_name
+        self.batch_nums = batch_nums
+
         if self.table_dir.exists():
             shutil.rmtree(self.table_dir)
         self.table_dir.mkdir(parents=True, exist_ok=False)
 
-        self.index = 0
-        self.cur_num_lines = 0
-        self.batch_size = batch_size
-        self.cur_file = self.table_dir / f"{self.index:d}.jsonl"
-        self.cur_file_writer = None
-
     def write(self, json_value: List[Dict[str, Any]]):
-        if self.cur_file_writer is None:
-            self.cur_file_writer = open(self.cur_file, 'w')
         for json_obj in json_value:
-            self.cur_file_writer.write(ujson.dumps(json_obj, ensure_ascii=False) + '\n')
-        self.cur_num_lines += 1
-        if self.cur_num_lines >= self.batch_size:
-            self.cur_file_writer.close()
-            self.cur_num_lines = 0
-            self.index += 1
-            self.cur_file = self.table_dir / f"{self.index:d}.jsonl"
-            self.cur_file_writer = None
-
-    def close(self):
-        self.cur_file_writer.close()
+            if self.table_name == 'qualifiers':
+                file_index = hash(json_obj['claim_id']) % self.batch_nums
+            else:
+                file_index = int(json_obj['qid'][1:]) % self.batch_nums
+            with open(self.table_dir / f"{file_index:d}.jsonl", 'a') as f:
+                f.write(ujson.dumps(json_obj, ensure_ascii=False) + '\n')
 
 
 class Writer:
-    def __init__(self, path: Path, batch_size: int, total_num_lines: int):
+    def __init__(self, path: Path, batch_nums: int, total_num_lines: int):
         self.cur_num_lines = 0
         self.total_num_lines = total_num_lines
         self.start_time = time.time()
-        self.output_tables = {table_name: Table(path, batch_size, table_name) for table_name in TABLE_NAMES}
+        self.output_tables = {table_name: Table(path, batch_nums, table_name) for table_name in TABLE_NAMES}
 
     def write(self, json_object: Dict[str, Any]):
         self.cur_num_lines += 1
@@ -59,16 +49,11 @@ class Writer:
                   f"Estimated time to completion is {estimated_time:.2f} hours.")
             self.start_time = time.time()
 
-    def close(self):
-        for v in self.output_tables.values():
-            v.close()
 
-
-def write_data(path: Path, batch_size: int, total_num_lines: int, outout_queue: Queue):
-    writer = Writer(path, batch_size, total_num_lines)
+def write_data(path: Path, batch_nums: int, total_num_lines: int, outout_queue: Queue):
+    writer = Writer(path, batch_nums, total_num_lines)
     while True:
         json_object = outout_queue.get()
         if json_object is None:
             break
         writer.write(json_object)
-    writer.close()

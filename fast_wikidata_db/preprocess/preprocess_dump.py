@@ -27,7 +27,7 @@ def get_arg_parser():
     parser.add_argument('--output_dir', type=str, default=DEFAULT_DATA_DIR, help='path to output directory')
     parser.add_argument('--language_id', type=str, default='en', help='language identifier')
     parser.add_argument('--processes', type=int, default=90, help="number of concurrent processes to spin off. ")
-    parser.add_argument('--batch_size', type=int, default=10000)
+    parser.add_argument('--batch_nums', type=int, default=10000)
     parser.add_argument('--num_lines_read', type=int, default=-1,
                         help='Terminate after num_lines_read lines are read. Useful for debugging.')
     parser.add_argument('--num_lines_in_dump', type=int, default=-1, help='Number of lines in dump. If -1, we will count the number of lines.')
@@ -71,7 +71,7 @@ def main():
 
     write_process = Process(
         target=write_data,
-        args=(output_dir, args.batch_size, total_num_lines, output_queue)
+        args=(output_dir, args.batch_nums, total_num_lines, output_queue)
     )
     write_process.start()
 
