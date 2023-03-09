@@ -15,7 +15,7 @@ def get_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_dir', type=str, required=True, help='path to preprocessed wikidata dump')
     parser.add_argument('--output_dir', type=str, default=DEFAULT_DATA_DIR, help='path to output directory')
-    parser.add_argument('--remove_preprocessed_dump', default=False, action='store_true', help='whether to remove old preprocessed files')
+    parser.add_argument('--remove_old', default=False, action='store_true', help='whether to remove old preprocessed files')
     return parser
 
 
@@ -43,7 +43,7 @@ def main():
     for table_name in TABLE_NAMES:
         process = Process(
             target=indexer[table_name],
-            args=(os.path.join(input_dir, table_name), args.remove_preprocessed_dump)
+            args=(os.path.join(input_dir, table_name), args.remove_old)
         )
         process.start()
         processes.append(process)
