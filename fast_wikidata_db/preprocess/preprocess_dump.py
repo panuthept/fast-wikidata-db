@@ -3,22 +3,22 @@ Wikidata Dump Processor
 This script preprocesses the raw Wikidata dump (in JSON format) and sorts triples into 8 "tables": labels, descriptions, aliases, entity_rels, external_ids, entity_values, qualifiers, and wikipedia_links. See the README for more information on each table.
 """
 
+import os
+import time
 import argparse
 import multiprocessing
-from multiprocessing import Queue, Process
 from pathlib import Path
-import time
-
+from multiprocessing import Queue, Process
 from fast_wikidata_db.constants.const import DEFAULT_DATA_DIR
-from fast_wikidata_db.preprocess.preprocess_utils.reader_process import count_lines, read_data
-from fast_wikidata_db.preprocess.preprocess_utils.worker_process import process_data
 from fast_wikidata_db.preprocess.preprocess_utils.writer_process import write_data
+from fast_wikidata_db.preprocess.preprocess_utils.worker_process import process_data
+from fast_wikidata_db.preprocess.preprocess_utils.reader_process import count_lines, read_data
 
 
 def get_arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_dir', type=str, required=True, help='path to gz wikidata json dump')
-    parser.add_argument('--output_dir', type=str, default=DEFAULT_DATA_DIR, help='path to output directory')
+    parser.add_argument('--output_dir', type=str, default=None, help='path to output directory')
     parser.add_argument('--language_id', type=str, default='en', help='language identifier')
     parser.add_argument('--processes', type=int, default=90, help="number of concurrent processes to spin off. ")
     parser.add_argument('--batch_nums', type=int, default=10000)
@@ -33,7 +33,10 @@ def main():
     args = get_arg_parser().parse_args()
     print(f"ARGS: {args}")
 
-    output_dir = Path(args.output_dir)
+    output_dir = args.output_dir
+    if os.path.exists(output_dir):
+        output_dir = os.path.join(DEFAULT_DATA_DIR, args.language_id)
+    output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
     input_dir = Path(args.input_dir)
