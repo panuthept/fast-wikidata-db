@@ -7,12 +7,13 @@ import os
 import time
 import argparse
 import multiprocessing
+from tqdm import tqdm
 from pathlib import Path
 from multiprocessing import Queue, Process
 from fast_wikidata_db.constants.const import DEFAULT_DATA_DIR
 from fast_wikidata_db.preprocess.preprocess_utils.writer_process import write_data
 from fast_wikidata_db.preprocess.preprocess_utils.worker_process import process_data
-from fast_wikidata_db.preprocess.preprocess_utils.reader_process import count_lines, read_data
+from fast_wikidata_db.preprocess.preprocess_utils.reader_process import count_lines, parallel_read_data
 
 
 def get_arg_parser():
@@ -59,20 +60,43 @@ def main():
     work_queue = Queue(maxsize=maxsize)
 
     # Processes for reading/processing/writing
+
+    # Setup Reading Process
     num_lines_read = multiprocessing.Value("i", 0)
-    read_process = Process(
-        target=read_data,
-        args=(input_dir, num_lines_read, max_lines_to_read, work_queue)
-    )
+    read_processes = []
+    for i in range(10):
+        start_line = i * total_num_lines // 10
+        end_line = (i + 1) * total_num_lines // 10
+        position = i
 
-    read_process.start()
+        read_process = Process(
+            target=parallel_read_data,
+            args=(
+                input_dir,
+                num_lines_read, 
+                start_line,
+                end_line, 
+                work_queue,
+                position,
+            )
+        )
+        read_process.start()
+        read_processes.append(read_process)
 
-    write_process = Process(
-        target=write_data,
-        args=(output_dir, args.batch_nums, total_num_lines, output_queue)
-    )
-    write_process.start()
+    # Setup Writing Process
+    write_processes = []
+    for i in range(10):
+        remove_existing = i == 0
+        verbose = i == 0
 
+        write_process = Process(
+            target=write_data,
+            args=(output_dir, args.batch_nums, verbose, output_queue, remove_existing)
+        )
+        write_process.start()
+        write_processes.append(write_process)
+
+    # Setup Processing Process
     work_processes = []
     for _ in range(max(1, args.processes-2)):
         work_process = Process(
@@ -83,7 +107,9 @@ def main():
         work_process.start()
         work_processes.append(work_process)
 
-    read_process.join()
+    # Wait for all processes to finish
+    for read_process in read_processes:
+        read_process.join()
     print(f"Done! Read {num_lines_read.value} lines")
     # Cause all worker process to quit
     for work_process in work_processes:
@@ -92,7 +118,8 @@ def main():
     for work_process in work_processes:
         work_process.join()
     output_queue.put(None)
-    write_process.join()
+    for write_process in write_processes:
+        write_process.join()
 
     print(f"Finished processing {num_lines_read.value} in {time.time() - start}s")
 
