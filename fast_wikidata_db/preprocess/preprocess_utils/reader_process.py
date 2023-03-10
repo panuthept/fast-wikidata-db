@@ -1,7 +1,9 @@
-from tqdm import tqdm
-from multiprocessing import Queue, Value
-from pathlib import Path
 import gzip
+import itertools
+from tqdm import tqdm
+from pathlib import Path
+from multiprocessing import Queue, Value
+
 
 def count_lines(input_file: Path, max_lines_to_read: int):
     cnt = 0
@@ -11,6 +13,7 @@ def count_lines(input_file: Path, max_lines_to_read: int):
             if max_lines_to_read > 0 and cnt >= max_lines_to_read:
                 break
     return cnt
+
 
 def read_data(input_file: Path, num_lines_read: Value, max_lines_to_read: int, work_queue: Queue):
     """
@@ -34,4 +37,25 @@ def read_data(input_file: Path, num_lines_read: Value, max_lines_to_read: int, w
             if 0 < max_lines_to_read <= num_lines:
                 break
     num_lines_read.value = num_lines
+    return
+
+
+def parallel_read_data(input_file: Path, num_lines_read: Value, start_line: int, end_line: int, work_queue: Queue, position: int = 0):
+    progress_bar = tqdm(total=end_line - start_line, position=position, desc=f"Reading wikidata dump: {position}")
+    with gzip.GzipFile(input_file, "r") as f:
+        for num_lines, ln in enumerate(itertools.islice(f, start_line, end_line)):
+            if ln == b"[\n" or ln == b"]\n":
+                continue
+
+            if ln.endswith(b",\n"):  # all but the last element
+                obj = ln[:-2]
+            else:
+                obj = ln
+
+            work_queue.put(obj)
+            num_lines_read.value += 1
+            progress_bar.update(1)
+
+            if 0 < end_line - start_line <= num_lines:
+                break
     return
