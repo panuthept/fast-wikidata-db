@@ -28,25 +28,29 @@ class Wikidata:
         self.entity_inv_rels = LmdbImmutableDict(os.path.join(self.database_dir, "entity_inv_rels.lmdb"))
 
     def get_title(self, qcode: str) -> str:
-        pass
+        return self.labels.get(qcode, None)
 
     def get_desc(self, qcode: str) -> str:
-        pass
+        return self.descriptions.get(qcode, None)
 
     def get_aliases(self, qcode: str) -> List[str]:
-        pass
+        return self.aliases.get(qcode, None)
 
     def get_pcodes(self, qcode: str) -> List[str]:
-        pass
+        entity_rels = self.entity_rels.get(qcode, None)
+        if entity_rels is not None:
+            return list(entity_rels.keys())
 
     def get_inv_pcodes(self, qcode: str) -> List[str]:
-        pass
+        entity_inv_rels = self.entity_inv_rels.get(qcode, None)
+        if entity_inv_rels is not None:
+            return list(entity_inv_rels.keys())
 
     def get_entity_rels(self, qcode: str) -> Dict[str, List[str]]:
-        pass
+        return self.entity_rels.get(qcode, None)
 
     def get_entity_inv_rels(self, qcode: str) -> Dict[str, List[str]]:
-        pass
+        return self.entity_inv_rels.get(qcode, None)
 
     def get_entities(self, qcode: str, pcode: str = None, inv_pcode: str = None) -> List[str]:
         assert pcode is not None or inv_pcode is not None, "Either pcode or inv_pcode must be specified"
