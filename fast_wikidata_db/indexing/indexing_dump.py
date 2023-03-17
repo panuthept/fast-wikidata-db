@@ -43,7 +43,7 @@ def main():
     for table_name in TABLE_NAMES:
         process = Process(
             target=indexer[table_name],
-            args=(os.path.join(input_dir, table_name), args.remove_old)
+            args=(os.path.join(input_dir, table_name), os.path.join(output_dir, table_name), args.remove_old)
         )
         process.start()
         processes.append(process)
