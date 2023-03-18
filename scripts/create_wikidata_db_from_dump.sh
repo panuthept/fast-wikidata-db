@@ -12,5 +12,5 @@ python -m fast_wikidata_db.preprocess.preprocess_dump \
 # # Indexing the preprocessed dump
 python -m fast_wikidata_db.indexing.indexing_dump \
     --input_dir ./data/en \
-    --output_dir ./data/en \
+    --output_dir ./data/wikidata_db \
     --remove_old

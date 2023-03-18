@@ -16,30 +16,30 @@ class Wikidata:
         self.entity_inv_rels = LmdbImmutableDict(os.path.join(self.database_dir, "entity_inv_rels.lmdb"))
 
     def is_exists(self, qcode: str) -> bool:
-        return self.get_title(qcode) is not None
+        return self.retrieve_entity_title(qcode) is not None
 
-    def get_title(self, qcode: str) -> str:
+    def retrieve_entity_title(self, qcode: str) -> str:
         return self.labels.get(qcode, None)
 
-    def get_aliases(self, qcode: str) -> List[str]:
+    def retrieve_entity_aliases(self, qcode: str) -> List[str]:
         return self.aliases.get(qcode, None)
 
-    def get_desc(self, qcode: str) -> str:
+    def retrieve_entity_description(self, qcode: str) -> str:
         return self.descriptions.get(qcode, None)
 
-    def get_entity_rels(self, qcode: str, inverse_relation: bool = False) -> Dict[str, List[str]]:
+    def retrieve_entity_relations(self, qcode: str, inverse_relation: bool = False) -> Dict[str, List[str]]:
         if inverse_relation:
             return self.entity_inv_rels.get(qcode, dict())
         else:
             return self.entity_rels.get(qcode, dict())
 
-    def get_pcodes(self, qcode: str, inverse_relation: bool = False) -> List[str]:
-        rels = self.get_entity_rels(qcode, inverse_relation)
+    def retrieve_entity_edges(self, qcode: str, inverse_relation: bool = False) -> List[str]:
+        rels = self.retrieve_entity_relations(qcode, inverse_relation)
         return list(rels.keys())
 
     def retrieve_entities(self, qcode: str, pcode: str, inverse_relation: bool = False) -> List[str]:
         entity_qcodes = []
-        rels = self.get_entity_rels(qcode, inverse_relation=inverse_relation)
+        rels = self.retrieve_entity_relations(qcode, inverse_relation=inverse_relation)
         if len(rels) > 0:
             entity_qcodes = rels.get(pcode, list())
         return entity_qcodes
@@ -61,9 +61,9 @@ if __name__ == "__main__":
     for i in trange(10000000):
         qcode = f"Q{i}"
         if wikidata.is_exists(qcode):
-            title = wikidata.get_title(qcode)
-            aliases = wikidata.get_aliases(qcode)
-            decs = wikidata.get_desc(qcode)
-            pcodes = wikidata.get_pcodes(qcode)
+            title = wikidata.retrieve_entity_title(qcode)
+            aliases = wikidata.retrieve_entity_aliases(qcode)
+            decs = wikidata.retrieve_entity_description(qcode)
+            pcodes = wikidata.retrieve_entity_edges(qcode)
             if len(pcodes) > 0:
                 entity = wikidata.retrieve_entities(qcode, pcodes[0])
