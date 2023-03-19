@@ -1,2 +1,2 @@
 # fast-wikidata-db
-A python library provides a fastest way to retrieve data from Wikidata.
+A python library provides the fastest way to retrieve data from Wikidata.
