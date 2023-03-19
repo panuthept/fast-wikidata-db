@@ -1,12 +1,12 @@
 import os
 from typing import List, Dict
-from fast_wikidata_db.constants.const import DEFAULT_DATA_DIR
+from fast_wikidata_db.constants.const import DEFAULT_DB_DIR
 from fast_wikidata_db.indexing.lmdb_wrapper import LmdbImmutableDict
 
 
 class Wikidata:
     def __init__(self, database_dir: str = None):
-        self.database_dir = database_dir if database_dir is not None else DEFAULT_DATA_DIR + "/wikidata_db"
+        self.database_dir = database_dir if database_dir is not None else DEFAULT_DB_DIR
 
         self.labels = LmdbImmutableDict(os.path.join(self.database_dir, "labels.lmdb"))
         self.aliases = LmdbImmutableDict(os.path.join(self.database_dir, "aliases.lmdb"))
@@ -55,7 +55,7 @@ class Wikidata:
 if __name__ == "__main__":
     from tqdm import trange
 
-    wikidata = Wikidata(database_dir="./data/wikidata_db")
+    wikidata = Wikidata()
 
     print("Testing Retrieval Speed...")
     for i in trange(10000000):
