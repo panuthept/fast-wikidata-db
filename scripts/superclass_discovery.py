@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_hop', type=int, default=9)
     args = parser.parse_args()
 
-    wikidata = Wikidata(database_dir="./data/wikidata_db")
+    wikidata = Wikidata()
 
     start_time = time()
     superclasses = []
