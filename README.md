@@ -3,6 +3,8 @@ A python library provides the easiest way to store and retrieve data from Wikida
 
 ## Installation
 ```bash
+git clone https://github.com/panuthept/fast-wikidata-db.git
+cd fast-wikidata-db
 pip install .
 ```
 
