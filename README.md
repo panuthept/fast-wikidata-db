@@ -10,7 +10,7 @@ pip install .
 ```python
 from fast_wikidata_db.wikidata import Wikidata
 
-# Create a Wikidata object (the nessary files will be downloaded automatically)
+# Create a Wikidata object (the necessary files will be downloaded automatically)
 wikidata = Wikidata()
 
 wikidata.is_exists("Q8")
