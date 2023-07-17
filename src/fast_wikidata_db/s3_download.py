@@ -1,5 +1,6 @@
 import os
 import boto3
+import wget
 import subprocess
 from tqdm import tqdm
 from fast_wikidata_db.constants.const import S3_BUCKET, S3_KEYS, DATA_URLS
@@ -41,4 +42,4 @@ def db_download(db_dir):
                 ) as t:
                     s3_obj.download_file(f"{db_dir}/{s3_key}", Callback=tqdm_hook(t))
             except:
-                runcmd(f"wget {DATA_URLS[s3_key]} -O {db_dir}/{s3_key}", verbose=True)
+                wget.download(DATA_URLS[s3_key], out=f"{db_dir}/{s3_key}")
