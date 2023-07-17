@@ -1,6 +1,23 @@
+import os
 import boto3
+import subprocess
 from tqdm import tqdm
-from fast_wikidata_db.constants.const import S3_BUCKET, S3_KEYS
+from fast_wikidata_db.constants.const import S3_BUCKET, S3_KEYS, DATA_URLS
+
+
+# NOTE: Thanks! code from https://www.scrapingbee.com/blog/python-wget
+def runcmd(cmd, verbose = False, *args, **kwargs):
+    process = subprocess.Popen(
+        cmd,
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE,
+        text = True,
+        shell = True
+    )
+    std_out, std_err = process.communicate()
+    if verbose:
+        print(std_out.strip(), std_err)
+    pass
 
 
 def tqdm_hook(tqdm_progress_bar: tqdm):
@@ -13,11 +30,15 @@ def tqdm_hook(tqdm_progress_bar: tqdm):
 def db_download(db_dir):
     s3 = boto3.resource("s3")
     for s3_key in S3_KEYS:
-        s3_obj = s3.Object(S3_BUCKET, s3_key)
-        with tqdm(
-            total=s3_obj.content_length,
-            unit="B",
-            unit_scale=True,
-            desc=f"Downloading {s3_key}",
-        ) as t:
-            s3_obj.download_file(f"{db_dir}/{s3_key}", Callback=tqdm_hook(t))
+        if not os.path.exists(f"{db_dir}/{s3_key}"):
+            try:
+                s3_obj = s3.Object(S3_BUCKET, s3_key)
+                with tqdm(
+                    total=s3_obj.content_length,
+                    unit="B",
+                    unit_scale=True,
+                    desc=f"Downloading {s3_key}",
+                ) as t:
+                    s3_obj.download_file(f"{db_dir}/{s3_key}", Callback=tqdm_hook(t))
+            except:
+                runcmd(f"wget {DATA_URLS[s3_key]} -O {db_dir}/{s3_key}", verbose=True)
