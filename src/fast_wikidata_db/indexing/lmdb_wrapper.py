@@ -1,17 +1,33 @@
+# NOTE: These codes are taken from https://github.com/amazon-science/ReFinED
+
 import logging
 import os
 import warnings
-from typing import List, Any, Dict, Mapping
+from typing import List, Any, Dict, Mapping, Iterable
 from typing import TypeVar
 
 import lmdb
 import ujson as json
 from tqdm import tqdm
 
-from refined.utilities.general_utils import batch_items
-
 K = TypeVar('K')
 V = TypeVar('V')
+
+
+def batch_items(iterable: Iterable[Any], n: int = 1):
+    """
+    Batches an iterables by yielding lists of length n. Final batch length may be less than n.
+    :param iterable: any iterable
+    :param n: batch size (final batch may be truncated)
+    """
+    current_batch = []
+    for item in iterable:
+        current_batch.append(item)
+        if len(current_batch) == n:
+            yield current_batch
+            current_batch = []
+    if current_batch:
+        yield current_batch
 
 
 class LmdbImmutableDict(Mapping[K, V]):
