@@ -11,7 +11,8 @@ class Wikidata:
 
         # Download the database if it does not exist
         if not os.path.exists(os.path.join(self.database_dir, "entity_inv_rels.lmdb")):
-            os.makedirs(self.database_dir)
+            if not os.path.exists(self.database_dir):
+                os.makedirs(self.database_dir)
             db_download(self.database_dir)
 
         self.labels = LmdbImmutableDict(os.path.join(self.database_dir, "labels.lmdb"))
