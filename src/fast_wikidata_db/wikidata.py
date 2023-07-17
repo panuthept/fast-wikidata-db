@@ -1,12 +1,18 @@
 import os
 from typing import List, Dict
 from fast_wikidata_db.constants.const import DEFAULT_DB_DIR
+from fast_wikidata_db.s3_download import db_download
 from fast_wikidata_db.indexing.lmdb_wrapper import LmdbImmutableDict
 
 
 class Wikidata:
     def __init__(self, database_dir: str = None):
         self.database_dir = database_dir if database_dir is not None else DEFAULT_DB_DIR
+
+        # Download the database if it does not exist
+        if not os.path.exists(self.database_dir):
+            os.mkdir(self.database_dir)
+            db_download(self.database_dir)
 
         self.labels = LmdbImmutableDict(os.path.join(self.database_dir, "labels.lmdb"))
         self.aliases = LmdbImmutableDict(os.path.join(self.database_dir, "aliases.lmdb"))
