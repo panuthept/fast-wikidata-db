@@ -35,25 +35,24 @@ def tqdm_wget_hook(tqdm_progress_bar: tqdm):
     return inner
 
 
-def db_download(db_dir):
+def db_download(db_dir, s3_key):
     s3 = boto3.resource("s3")
-    for s3_key in S3_KEYS:
-        if not os.path.exists(f"{db_dir}/{s3_key}"):
-            try:
-                # Faster than wget but requires aws credentials
-                s3_obj = s3.Object(S3_BUCKET, s3_key)
-                with tqdm(
-                    total=s3_obj.content_length,
-                    unit="B",
-                    unit_scale=True,
-                    desc=f"Downloading {s3_key}",
-                ) as t:
-                    s3_obj.download_file(f"{db_dir}/{s3_key}", Callback=tqdm_hook(t))
-            except:
-                # Works without aws credentials but slower than boto3
-                with tqdm(
-                    unit="B",
-                    unit_scale=True,
-                    desc=f"Downloading {s3_key}",
-                ) as t:
-                    wget.download(DATA_URLS[s3_key], out=f"{db_dir}/{s3_key}", bar=tqdm_wget_hook(t))
+    if not os.path.exists(f"{db_dir}/{s3_key}"):
+        try:
+            # Faster than wget but requires aws credentials
+            s3_obj = s3.Object(S3_BUCKET, s3_key)
+            with tqdm(
+                total=s3_obj.content_length,
+                unit="B",
+                unit_scale=True,
+                desc=f"Downloading {s3_key}",
+            ) as t:
+                s3_obj.download_file(f"{db_dir}/{s3_key}", Callback=tqdm_hook(t))
+        except:
+            # Works without aws credentials but slower than boto3
+            with tqdm(
+                unit="B",
+                unit_scale=True,
+                desc=f"Downloading {s3_key}",
+            ) as t:
+                wget.download(DATA_URLS[s3_key], out=f"{db_dir}/{s3_key}", bar=tqdm_wget_hook(t))

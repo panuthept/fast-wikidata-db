@@ -10,10 +10,20 @@ class Wikidata:
         self.database_dir = database_dir if database_dir is not None else DEFAULT_DB_DIR
 
         # Download the database if it does not exist
-        if not os.path.exists(os.path.join(self.database_dir, "entity_inv_rels.lmdb")): # A hack to avoid checking every files
-            if not os.path.exists(self.database_dir):
-                os.makedirs(self.database_dir)
-            db_download(self.database_dir)
+        if not os.path.exists(self.database_dir):
+            os.makedirs(self.database_dir)
+        if not os.path.exists(os.path.join(self.database_dir, "labels.lmdb")):
+            db_download(self.database_dir, s3_key="labels.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "aliases.lmdb")):
+            db_download(self.database_dir, s3_key="aliases.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "descriptions.lmdb")):
+            db_download(self.database_dir, s3_key="descriptions.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "entity_values.lmdb")):
+            db_download(self.database_dir, s3_key="entity_values.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "entity_rels.lmdb")):
+            db_download(self.database_dir, s3_key="entity_rels.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "entity_inv_rels.lmdb")):
+            db_download(self.database_dir, s3_key="entity_inv_rels.lmdb")
 
         self.labels = LmdbImmutableDict(os.path.join(self.database_dir, "labels.lmdb"))
         self.aliases = LmdbImmutableDict(os.path.join(self.database_dir, "aliases.lmdb"))
