@@ -11,6 +11,9 @@ setup(
     package_dir={"": "src"},
     include_package_data=True,
     install_requires=[
-        "wget"
+        "wget",
+        "ujson",
+        "tqdm",
+        "lmdb",
     ]
 )
