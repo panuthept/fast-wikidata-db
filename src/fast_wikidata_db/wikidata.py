@@ -24,6 +24,8 @@ class Wikidata:
             db_download(self.database_dir, s3_key="entity_rels.lmdb")
         if not os.path.exists(os.path.join(self.database_dir, "entity_inv_rels.lmdb")):
             db_download(self.database_dir, s3_key="entity_inv_rels.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "wikipedia_links.lmdb")):
+            db_download(self.database_dir, s3_key="wikipedia_links.lmdb")
 
         self.labels = LmdbImmutableDict(os.path.join(self.database_dir, "labels.lmdb"))
         self.aliases = LmdbImmutableDict(os.path.join(self.database_dir, "aliases.lmdb"))
@@ -31,6 +33,7 @@ class Wikidata:
         self.entity_values = LmdbImmutableDict(os.path.join(self.database_dir, "entity_values.lmdb"))
         self.entity_rels = LmdbImmutableDict(os.path.join(self.database_dir, "entity_rels.lmdb"))
         self.entity_inv_rels = LmdbImmutableDict(os.path.join(self.database_dir, "entity_inv_rels.lmdb"))
+        self.wikipedia_links = LmdbImmutableDict(os.path.join(self.database_dir, "wikipedia_links.lmdb"))
 
     def retrieve_entity_title(self, qcode: str) -> str:
         return self.labels.get(qcode, None)
@@ -62,6 +65,9 @@ class Wikidata:
         if len(rels) > 0:
             entity_values = rels.get(pcode, list())
         return entity_values
+    
+    def retrieva_wikipedia_title(self, qcode: str) -> str:
+        return self.wikipedia_links.get(qcode, None)
     
     def is_exists(self, qcode: str) -> bool:
         return self.retrieve_entity_title(qcode) is not None
