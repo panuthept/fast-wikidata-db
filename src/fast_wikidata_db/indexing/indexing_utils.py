@@ -63,7 +63,7 @@ def index_wikipedia_links(input_dir, output_dir, remove_old=False):
 
     lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
-    for filename in tqdm(filenames, desc="Indexing wikipedia_titles", position=2):
+    for filename in tqdm(filenames, desc="Indexing wikipedia_links", position=2):
         data_dir = os.path.join(input_dir, filename)
         # Read
         merged_data = {}
