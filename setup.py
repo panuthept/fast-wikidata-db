@@ -15,5 +15,6 @@ setup(
         "ujson",
         "tqdm",
         "lmdb",
+        "boto3",
     ]
 )
