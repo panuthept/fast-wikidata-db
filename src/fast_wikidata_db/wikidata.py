@@ -1,7 +1,7 @@
 import os
 from typing import List, Dict
-from fast_wikidata_db.constants.const import DEFAULT_DB_DIR
 from fast_wikidata_db.s3_download import db_download
+from fast_wikidata_db.constants.const import DEFAULT_DB_DIR
 from fast_wikidata_db.indexing.lmdb_wrapper import LmdbImmutableDict
 
 
@@ -85,6 +85,4 @@ if __name__ == "__main__":
             title = wikidata.retrieve_entity_title(qcode)
             aliases = wikidata.retrieve_entity_aliases(qcode)
             decs = wikidata.retrieve_entity_description(qcode)
-            pcodes = wikidata.retrieve_entity_edges(qcode)
-            if len(pcodes) > 0:
-                entity = wikidata.retrieve_entities(qcode, pcodes[0])
+            wikipedia_title = wikidata.retrieva_wikipedia_title(qcode)
