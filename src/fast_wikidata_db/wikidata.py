@@ -44,6 +44,9 @@ class Wikidata:
     def retrieve_entity_description(self, qcode: str) -> str:
         return self.descriptions.get(qcode, None)
 
+    def retrieva_wikipedia_title(self, qcode: str) -> str:
+        return self.wikipedia_links.get(qcode, None)
+
     def retrieve_entity_relations(self, qcode: str, inverse_relation: bool = False) -> Dict[str, List[str]]:
         if inverse_relation:
             return self.entity_inv_rels.get(qcode, dict())
@@ -65,9 +68,6 @@ class Wikidata:
         if len(rels) > 0:
             entity_values = rels.get(pcode, list())
         return entity_values
-    
-    def retrieva_wikipedia_title(self, qcode: str) -> str:
-        return self.wikipedia_links.get(qcode, None)
     
     def is_exists(self, qcode: str) -> bool:
         return self.retrieve_entity_title(qcode) is not None
