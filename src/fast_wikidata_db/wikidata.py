@@ -28,6 +28,8 @@ class Wikidata:
             db_download(self.database_dir, s3_key="wikidata_qid_to_wikipedia_title.lmdb")
         if not os.path.exists(os.path.join(self.database_dir, "wikipedia_title_to_wikidata_qid.lmdb")):
             db_download(self.database_dir, s3_key="wikipedia_title_to_wikidata_qid.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "redirects.lmdb")):
+            db_download(self.database_dir, s3_key="redirects.lmdb")
 
         self.labels = LmdbImmutableDict(os.path.join(self.database_dir, "labels.lmdb"))
         self.aliases = LmdbImmutableDict(os.path.join(self.database_dir, "aliases.lmdb"))
@@ -37,12 +39,18 @@ class Wikidata:
         self.entity_inv_rels = LmdbImmutableDict(os.path.join(self.database_dir, "entity_inv_rels.lmdb"))
         self.wikidata_qid_to_wikipedia_title = LmdbImmutableDict(os.path.join(self.database_dir, "wikidata_qid_to_wikipedia_title.lmdb"))
         self.wikipedia_title_to_wikidata_qid = LmdbImmutableDict(os.path.join(self.database_dir, "wikipedia_title_to_wikidata_qid.lmdb"))
+        self.redirects = LmdbImmutableDict(os.path.join(self.database_dir, "redirects.lmdb"))
 
     def wikipedia_to_wikidata(self, wikipedia_title: str) -> str:
+        if wikipedia_title in self.redirects:
+            wikipedia_title = self.redirects[wikipedia_title]
         return self.wikipedia_title_to_wikidata_qid.get(wikipedia_title, None)
 
     def wikidata_to_wikipedia(self, qcode: str) -> str:
-        return self.wikidata_qid_to_wikipedia_title.get(qcode, None)
+        wikipedia_title = self.wikidata_qid_to_wikipedia_title.get(qcode, None)
+        if wikipedia_title in self.redirects:
+            wikipedia_title = self.redirects[wikipedia_title]
+        return wikipedia_title
 
     def retrieve_entity_title(self, qcode: str) -> str:
         return self.labels.get(qcode, None)
