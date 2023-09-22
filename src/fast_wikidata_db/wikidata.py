@@ -24,8 +24,10 @@ class Wikidata:
             db_download(self.database_dir, s3_key="entity_rels.lmdb")
         if not os.path.exists(os.path.join(self.database_dir, "entity_inv_rels.lmdb")):
             db_download(self.database_dir, s3_key="entity_inv_rels.lmdb")
-        if not os.path.exists(os.path.join(self.database_dir, "wikipedia_links.lmdb")):
-            db_download(self.database_dir, s3_key="wikipedia_links.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "wikidata_qid_to_wikipedia_title.lmdb")):
+            db_download(self.database_dir, s3_key="wikidata_qid_to_wikipedia_title.lmdb")
+        if not os.path.exists(os.path.join(self.database_dir, "wikipedia_title_to_wikidata_qid.lmdb")):
+            db_download(self.database_dir, s3_key="wikipedia_title_to_wikidata_qid.lmdb")
 
         self.labels = LmdbImmutableDict(os.path.join(self.database_dir, "labels.lmdb"))
         self.aliases = LmdbImmutableDict(os.path.join(self.database_dir, "aliases.lmdb"))
@@ -33,7 +35,14 @@ class Wikidata:
         self.entity_values = LmdbImmutableDict(os.path.join(self.database_dir, "entity_values.lmdb"))
         self.entity_rels = LmdbImmutableDict(os.path.join(self.database_dir, "entity_rels.lmdb"))
         self.entity_inv_rels = LmdbImmutableDict(os.path.join(self.database_dir, "entity_inv_rels.lmdb"))
-        self.wikipedia_links = LmdbImmutableDict(os.path.join(self.database_dir, "wikipedia_links.lmdb"))
+        self.wikidata_qid_to_wikipedia_title = LmdbImmutableDict(os.path.join(self.database_dir, "wikidata_qid_to_wikipedia_title.lmdb"))
+        self.wikipedia_title_to_wikidata_qid = LmdbImmutableDict(os.path.join(self.database_dir, "wikipedia_title_to_wikidata_qid.lmdb"))
+
+    def wikipedia_to_wikidata(self, wikipedia_title: str) -> str:
+        return self.wikipedia_title_to_wikidata_qid.get(wikipedia_title, None)
+
+    def wikidata_to_wikipedia(self, qcode: str) -> str:
+        return self.wikidata_qid_to_wikipedia_title.get(qcode, None)
 
     def retrieve_entity_title(self, qcode: str) -> str:
         return self.labels.get(qcode, None)
@@ -43,9 +52,6 @@ class Wikidata:
 
     def retrieve_entity_description(self, qcode: str) -> str:
         return self.descriptions.get(qcode, None)
-
-    def retrieva_wikipedia_title(self, qcode: str) -> str:
-        return self.wikipedia_links.get(qcode, None)
 
     def retrieve_entity_relations(self, qcode: str, inverse_relation: bool = False) -> Dict[str, List[str]]:
         if inverse_relation:

@@ -6,8 +6,9 @@ from fast_wikidata_db.indexing.lmdb_wrapper import LmdbImmutableDict
 
 
 def index_labels(input_dir, output_dir, remove_old=False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    base_dir = os.path.dirname(output_dir)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
     lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
@@ -32,8 +33,9 @@ def index_labels(input_dir, output_dir, remove_old=False):
 
 
 def index_descriptions(input_dir, output_dir, remove_old=False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    base_dir = os.path.dirname(output_dir)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
     lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
@@ -58,10 +60,14 @@ def index_descriptions(input_dir, output_dir, remove_old=False):
 
 
 def index_wikipedia_links(input_dir, output_dir, remove_old=False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    base_dir = os.path.dirname(output_dir)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
-    lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
+    output_dir_1 = os.path.join(base_dir, "wikidata_qid_to_wikipedia_title")
+    output_dir_2 = os.path.join(base_dir, "wikipedia_title_to_wikidata_qid")
+    lmdb_dict_1 = LmdbImmutableDict(output_dir_1 + ".lmdb", write_mode=True)
+    lmdb_dict_2 = LmdbImmutableDict(output_dir_2 + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
     for filename in tqdm(filenames, desc="Indexing wikipedia_links", position=2):
         data_dir = os.path.join(input_dir, filename)
@@ -71,8 +77,9 @@ def index_wikipedia_links(input_dir, output_dir, remove_old=False):
             for line in f:
                 data = ujson.loads(line)
                 merged_data[data['qid']] = data['wiki_title']
-        for key, value in merged_data.items():
-            lmdb_dict.put(key=key, value=value)
+        for qid, title in merged_data.items():
+            lmdb_dict_1.put(key=qid, value=title)
+            lmdb_dict_2.put(key=title, value=qid)
         # Write
         # save_dir = os.path.join(output_dir, filename.replace(".jsonl", ".json"))
         # with open(save_dir, 'w') as f:
@@ -80,12 +87,14 @@ def index_wikipedia_links(input_dir, output_dir, remove_old=False):
         # Remove
         if remove_old:
             os.remove(data_dir)
-    lmdb_dict.write_to_compacted_file()
+    lmdb_dict_1.write_to_compacted_file()
+    lmdb_dict_2.write_to_compacted_file()
 
 
 def index_aliases(input_dir, output_dir, remove_old=False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    base_dir = os.path.dirname(output_dir)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
     lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
@@ -110,8 +119,9 @@ def index_aliases(input_dir, output_dir, remove_old=False):
 
 
 def index_entity_values(input_dir, output_dir, remove_old=False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    base_dir = os.path.dirname(output_dir)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
     lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
@@ -136,8 +146,9 @@ def index_entity_values(input_dir, output_dir, remove_old=False):
 
 
 def index_entity_rels(input_dir, output_dir, remove_old=False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    base_dir = os.path.dirname(output_dir)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
     lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
@@ -162,8 +173,9 @@ def index_entity_rels(input_dir, output_dir, remove_old=False):
 
 
 def index_entity_inv_rels(input_dir, output_dir, remove_old=False):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    base_dir = os.path.dirname(output_dir)
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
 
     lmdb_dict = LmdbImmutableDict(output_dir + ".lmdb", write_mode=True)
     filenames = [filename for filename in os.listdir(input_dir) if filename.endswith(".jsonl")]
