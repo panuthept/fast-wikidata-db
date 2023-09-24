@@ -42,15 +42,15 @@ class Wikidata:
         self.redirects = LmdbImmutableDict(os.path.join(self.database_dir, "redirects.lmdb"))
 
     def wikipedia_to_wikidata(self, wikipedia_title: str) -> str:
+        wikipedia_title = wikipedia_title.replace(" ", "_").replace("&lt;", "<").replace("&gt;", ">").replace("&le;", "≤").replace("&ge;", "≥")
         if wikipedia_title in self.redirects:
             wikipedia_title = self.redirects[wikipedia_title]
+        wikipedia_title = wikipedia_title.replace("_", " ")
+
         return self.wikipedia_title_to_wikidata_qid.get(wikipedia_title, None)
 
     def wikidata_to_wikipedia(self, qcode: str) -> str:
-        wikipedia_title = self.wikidata_qid_to_wikipedia_title.get(qcode, None)
-        if wikipedia_title in self.redirects:
-            wikipedia_title = self.redirects[wikipedia_title]
-        return wikipedia_title
+        return self.wikidata_qid_to_wikipedia_title.get(qcode, None)
 
     def retrieve_entity_title(self, qcode: str) -> str:
         return self.labels.get(qcode, None)
