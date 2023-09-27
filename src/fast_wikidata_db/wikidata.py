@@ -43,6 +43,7 @@ class Wikidata:
 
     def wikipedia_to_wikidata(self, wikipedia_title: str) -> str:
         wikipedia_title = wikipedia_title.replace(" ", "_").replace("&lt;", "<").replace("&gt;", ">").replace("&le;", "≤").replace("&ge;", "≥")
+        wikipedia_title = wikipedia_title[0].upper() + wikipedia_title[1:]
         if wikipedia_title in self.redirects:
             wikipedia_title = self.redirects[wikipedia_title]
         wikipedia_title = wikipedia_title.replace("_", " ")
@@ -85,18 +86,33 @@ class Wikidata:
     
     def is_exists(self, qcode: str) -> bool:
         return self.retrieve_entity_title(qcode) is not None
+    
+    def is_disambiguation_qcodes(self, qcode: str) -> bool:
+        desc = self.retrieve_entity_description(qcode)
+        if desc is not None:
+            return desc == "Wikimedia disambiguation page"
+        return False
+    
+    def is_description_available(self, qcode: str) -> bool:
+        desc = self.retrieve_entity_description(qcode)
+        if desc is not None:
+            return desc != "no description"
+        return False
 
 
 if __name__ == "__main__":
     from tqdm import trange
 
     wikidata = Wikidata()
+    qcode = wikidata.wikipedia_to_wikidata("new york")
+    print(qcode)
+    print(wikidata.is_disambiguation_qcodes(qcode))
 
-    print("Testing Retrieval Speed...")
-    for i in trange(10000000):
-        qcode = f"Q{i}"
-        if wikidata.is_exists(qcode):
-            title = wikidata.retrieve_entity_title(qcode)
-            aliases = wikidata.retrieve_entity_aliases(qcode)
-            decs = wikidata.retrieve_entity_description(qcode)
-            wikipedia_title = wikidata.retrieva_wikipedia_title(qcode)
+    # print("Testing Retrieval Speed...")
+    # for i in trange(10000000):
+    #     qcode = f"Q{i}"
+    #     if wikidata.is_exists(qcode):
+    #         title = wikidata.retrieve_entity_title(qcode)
+    #         aliases = wikidata.retrieve_entity_aliases(qcode)
+    #         decs = wikidata.retrieve_entity_description(qcode)
+    #         wikipedia_title = wikidata.wikidata_to_wikipedia(qcode)
