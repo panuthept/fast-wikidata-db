@@ -40,18 +40,29 @@ class Wikidata:
         self.wikidata_qid_to_wikipedia_title = LmdbImmutableDict(os.path.join(self.database_dir, "wikidata_qid_to_wikipedia_title.lmdb"))
         self.wikipedia_title_to_wikidata_qid = LmdbImmutableDict(os.path.join(self.database_dir, "wikipedia_title_to_wikidata_qid.lmdb"))
         self.redirects = LmdbImmutableDict(os.path.join(self.database_dir, "redirects.lmdb"))
+        self.wiki_to_qcode = LmdbImmutableDict(os.path.join(self.database_dir, "wiki_to_qcode.lmdb"))
 
-    def wikipedia_to_wikidata(self, wikipedia_title: str) -> str:
+    def redirect_wikipedia_title(self, wikipedia_title: str) -> str:
         wikipedia_title = wikipedia_title.replace(" ", "_").replace("&lt;", "<").replace("&gt;", ">").replace("&le;", "≤").replace("&ge;", "≥")
+        if wikipedia_title == "":
+            return " "
         wikipedia_title = wikipedia_title[0].upper() + wikipedia_title[1:]
         if wikipedia_title in self.redirects:
             wikipedia_title = self.redirects[wikipedia_title]
         wikipedia_title = wikipedia_title.replace("_", " ")
+        return wikipedia_title
 
-        return self.wikipedia_title_to_wikidata_qid.get(wikipedia_title, None)
+    def wikipedia_to_wikidata(self, wikipedia_title: str) -> str:
+        wikipedia_title = self.redirect_wikipedia_title(wikipedia_title)
+        qcode = self.wikipedia_title_to_wikidata_qid.get(wikipedia_title, None)
+        if qcode is None:
+            wikipedia_title = wikipedia_title.replace(" ", "_")
+            qcode = self.wiki_to_qcode.get(wikipedia_title, None)
+        return qcode
 
-    def wikidata_to_wikipedia(self, qcode: str) -> str:
-        return self.wikidata_qid_to_wikipedia_title.get(qcode, None)
+    def retrieve_wikipedia_title(self, qcode: str) -> str:
+        wikipedia_title = self.wikidata_qid_to_wikipedia_title.get(qcode, None)
+        return wikipedia_title
 
     def retrieve_entity_title(self, qcode: str) -> str:
         return self.labels.get(qcode, None)
@@ -104,9 +115,20 @@ if __name__ == "__main__":
     from tqdm import trange
 
     wikidata = Wikidata()
-    qcode = wikidata.wikipedia_to_wikidata("new york")
+    qcode = wikidata.wikipedia_to_wikidata("Radio Nicaragua")
     print(qcode)
-    print(wikidata.is_disambiguation_qcodes(qcode))
+    wikipedia_title = wikidata.wikidata_to_wikipedia("Q2937389")
+    print(wikipedia_title)
+    # qcode = wikidata.wikipedia_to_wikidata("Capital Cities/ABC")
+    # print(qcode)
+    # qcode = wikidata.wikipedia_to_wikidata("Capital Cities/ABC Inc.")
+    # print(qcode)
+
+    # qcode = "Q2937389"
+    # wikipedia_title = wikidata.wikidata_to_wikipedia(qcode)
+    # print(wikipedia_title)
+    # wikipedia_title = wikidata.redirect_wikipedia_title(wikipedia_title)
+    # print(wikipedia_title)
 
     # print("Testing Retrieval Speed...")
     # for i in trange(10000000):
